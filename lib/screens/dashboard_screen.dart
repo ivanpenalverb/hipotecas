@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/ui_providers.dart';
+import 'formulario_oferta_screen.dart';
+import '../providers/ui_providers.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -123,7 +125,12 @@ class DashboardScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print('Navegar a nueva oferta');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FormularioOfertaScreen(),
+            ),
+          );
         },
         child: const Icon(Icons.add),
         tooltip: 'Añadir Oferta',
