@@ -152,4 +152,38 @@ class DatabaseHelper {
     );
     return result.map((json) => TramoInteres.fromMap(json)).toList();
   }
+
+  Future<OfertaHipotecaria?> getOfertaById(String id) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'ofertas_hipotecarias',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (result.isNotEmpty) {
+      return OfertaHipotecaria.fromMap(result.first);
+    }
+    return null;
+  }
+
+  Future<List<Vinculacion>> getVinculacionesPorOferta(String ofertaId) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'vinculaciones',
+      where: 'ofertaId = ?',
+      whereArgs: [ofertaId],
+    );
+    return result.map((json) => Vinculacion.fromMap(json)).toList();
+  }
+
+  Future<List<AmortizacionAnticipada>> getAmortizacionesPorOferta(String ofertaId) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'amortizaciones_anticipadas',
+      where: 'ofertaId = ?',
+      whereArgs: [ofertaId],
+    );
+    return result.map((json) => AmortizacionAnticipada.fromMap(json)).toList();
+  }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/ui_providers.dart';
 import 'formulario_oferta_screen.dart';
-import '../providers/ui_providers.dart';
+import 'oferta_detail_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -59,9 +59,18 @@ class DashboardScreen extends ConsumerWidget {
               // Para el TIN base usamos el provider de tramos
               final tramosAsyncValue = ref.watch(tramosProvider(oferta.id));
 
-              return Card(
-                elevation: 2,
-                margin: const EdgeInsets.only(bottom: 16),
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OfertaDetailScreen(ofertaId: oferta.id),
+                    ),
+                  );
+                },
+                child: Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.only(bottom: 16),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -116,6 +125,7 @@ class DashboardScreen extends ConsumerWidget {
                         ],
                       ),
                     ],
+                  ),
                   ),
                 ),
               );
