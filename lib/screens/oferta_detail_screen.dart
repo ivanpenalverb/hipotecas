@@ -4,6 +4,7 @@ import '../providers/ui_providers.dart';
 import '../providers/calculadora_provider.dart';
 import '../models/calculo_models.dart';
 import '../models/vinculacion.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class OfertaDetailScreen extends ConsumerStatefulWidget {
   final String ofertaId;
@@ -126,8 +127,87 @@ class _OfertaDetailScreenState extends ConsumerState<OfertaDetailScreen> {
             Icons.account_balance,
             isLarge: true,
           ),
+          const SizedBox(height: 24),
+          _buildGraficoDistribucion(context, resumen),
         ],
       ),
+    );
+  }
+
+  Widget _buildGraficoDistribucion(BuildContext context, ResumenHipoteca resumen) {
+    double capital = resumen.cuadroAmortizacion.isNotEmpty 
+        ? resumen.cuadroAmortizacion.fold(0.0, (sum, m) => sum + m.capitalAmortizado) 
+        : 0;
+    double intereses = resumen.totalIntereses;
+    double otrosGastos = resumen.costeTotalOperacion - capital - intereses;
+    if (otrosGastos < 0) otrosGastos = 0;
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text('Distribución del Coste', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 40,
+                  sections: [
+                    PieChartSectionData(
+                      color: Theme.of(context).colorScheme.primary,
+                      value: capital,
+                      title: 'Capital\n${(capital / resumen.costeTotalOperacion * 100).toStringAsFixed(1)}%',
+                      radius: 50,
+                      titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    PieChartSectionData(
+                      color: Colors.orange,
+                      value: intereses,
+                      title: 'Intereses\n${(intereses / resumen.costeTotalOperacion * 100).toStringAsFixed(1)}%',
+                      radius: 50,
+                      titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    if (otrosGastos > 0)
+                      PieChartSectionData(
+                        color: Colors.grey,
+                        value: otrosGastos,
+                        title: 'Extra\n${(otrosGastos / resumen.costeTotalOperacion * 100).toStringAsFixed(1)}%',
+                        radius: 50,
+                        titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildLeyendaItem(Theme.of(context).colorScheme.primary, 'Capital'),
+                const SizedBox(width: 12),
+                _buildLeyendaItem(Colors.orange, 'Intereses'),
+                const SizedBox(width: 12),
+                _buildLeyendaItem(Colors.grey, 'Gastos Extra'),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLeyendaItem(Color color, String texto) {
+    return Row(
+      children: [
+        Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 4),
+        Text(texto, style: const TextStyle(fontSize: 12)),
+      ],
     );
   }
 

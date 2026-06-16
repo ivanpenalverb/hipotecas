@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/ui_providers.dart';
 import 'formulario_oferta_screen.dart';
 import 'oferta_detail_screen.dart';
+import 'comparador_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -15,6 +16,18 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Hipotecas'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.compare_arrows),
+            tooltip: 'Comparador Cara a Cara',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ComparadorScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: ofertasAsyncValue.when(
         loading: () => const Center(child: CircularProgressIndicator()),
