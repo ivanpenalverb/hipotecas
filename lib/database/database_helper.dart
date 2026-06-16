@@ -136,4 +136,20 @@ class DatabaseHelper {
       }
     });
   }
+
+  Future<List<OfertaHipotecaria>> getOfertasHipotecarias() async {
+    final db = await instance.database;
+    final result = await db.query('ofertas_hipotecarias');
+    return result.map((json) => OfertaHipotecaria.fromMap(json)).toList();
+  }
+
+  Future<List<TramoInteres>> getTramosPorOferta(String ofertaId) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'tramos_interes',
+      where: 'ofertaId = ?',
+      whereArgs: [ofertaId],
+    );
+    return result.map((json) => TramoInteres.fromMap(json)).toList();
+  }
 }
