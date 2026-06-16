@@ -5,6 +5,8 @@ import '../providers/calculadora_provider.dart';
 import '../models/calculo_models.dart';
 import '../models/vinculacion.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:printing/printing.dart';
+import '../services/pdf_export_service.dart';
 
 class OfertaDetailScreen extends ConsumerStatefulWidget {
   final String ofertaId;
@@ -27,6 +29,30 @@ class _OfertaDetailScreenState extends ConsumerState<OfertaDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Simulador y Detalle'),
+        actions: [
+          ofertaAsync.maybeWhen(
+            data: (data) {
+              return IconButton(
+                icon: const Icon(Icons.picture_as_pdf),
+                tooltip: 'Exportar a PDF',
+                onPressed: () async {
+                  List<Vinculacion> activas = data.vinculaciones
+                      .where((v) => _vinculacionesActivas[v.id] == true)
+                      .toList();
+                  ResumenHipoteca resumen = calculadoraService.calcularCuadroAmortizacion(
+                    data.oferta,
+                    data.tramos,
+                    activas,
+                    data.amortizaciones,
+                  );
+                  final pdfBytes = await PdfExportService.generateHipotecaPdf(data.oferta, resumen);
+                  await Printing.layoutPdf(onLayout: (format) async => pdfBytes);
+                },
+              );
+            },
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
       ),
       body: ofertaAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

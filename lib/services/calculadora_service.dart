@@ -6,12 +6,30 @@ import '../models/amortizacion_anticipada.dart';
 import '../models/calculo_models.dart';
 
 class CalculadoraService {
+  final Map<String, ResumenHipoteca> _cache = {};
+
+  String _generateCacheKey(
+    OfertaHipotecaria oferta,
+    List<Vinculacion> vinculacionesActivas,
+    List<AmortizacionAnticipada> amortizaciones,
+  ) {
+    // Ordenamos IDs para que la misma combinación siempre de el mismo string
+    var vinculacionesIds = vinculacionesActivas.map((v) => v.id).toList()..sort();
+    var amortizacionesIds = amortizaciones.map((a) => a.id).toList()..sort();
+    return "${oferta.id}_${oferta.capitalSolicitado}_${oferta.plazoAnios}_${vinculacionesIds.join('-')}_${amortizacionesIds.join('-')}";
+  }
+
   ResumenHipoteca calcularCuadroAmortizacion(
     OfertaHipotecaria oferta,
     List<TramoInteres> tramos,
     List<Vinculacion> vinculacionesActivas,
     List<AmortizacionAnticipada> amortizaciones,
   ) {
+    final cacheKey = _generateCacheKey(oferta, vinculacionesActivas, amortizaciones);
+    if (_cache.containsKey(cacheKey)) {
+      return _cache[cacheKey]!;
+    }
+
     double capitalPendiente = oferta.capitalSolicitado;
     int plazoMesesTotal = oferta.plazoAnios * 12;
     int mesesRestantes = plazoMesesTotal;
@@ -134,12 +152,15 @@ class CalculadoraService {
     double costeTotalOperacion = oferta.capitalSolicitado + totalIntereses + costeTotalVinculaciones + 
         (oferta.capitalSolicitado * (oferta.comisionAperturaPorcentaje / 100)) + oferta.gastosTasacion;
 
-    return ResumenHipoteca(
+    final resumen = ResumenHipoteca(
       totalIntereses: totalIntereses,
       costeTotalOperacion: costeTotalOperacion,
       cuotaInicial: cuotaInicial,
       mesesReales: cuadro.length,
       cuadroAmortizacion: cuadro,
     );
+    
+    _cache[cacheKey] = resumen;
+    return resumen;
   }
 }
