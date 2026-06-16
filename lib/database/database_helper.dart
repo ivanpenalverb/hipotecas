@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../models/banco_broker.dart';
 import '../models/oferta_hipotecaria.dart';
@@ -21,15 +23,27 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB(String filePath) async {
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, filePath);
+    if (kIsWeb) {
+      var factory = databaseFactoryFfiWeb;
+      return await factory.openDatabase(
+        filePath,
+        options: OpenDatabaseOptions(
+          version: 1,
+          onConfigure: _onConfigure,
+          onCreate: _onCreate,
+        ),
+      );
+    } else {
+      Directory documentsDirectory = await getApplicationDocumentsDirectory();
+      String path = join(documentsDirectory.path, filePath);
 
-    return await openDatabase(
-      path,
-      version: 1,
-      onConfigure: _onConfigure,
-      onCreate: _onCreate,
-    );
+      return await openDatabase(
+        path,
+        version: 1,
+        onConfigure: _onConfigure,
+        onCreate: _onCreate,
+      );
+    }
   }
 
   Future _onConfigure(Database db) async {
